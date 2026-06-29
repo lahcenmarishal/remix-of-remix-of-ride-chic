@@ -1,0 +1,271 @@
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { Check, ArrowRight, ArrowLeft, Users, Briefcase as Bag } from "lucide-react";
+import { toast } from "sonner";
+import { Header } from "@/components/site/Header";
+import { Footer } from "@/components/site/Footer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { listVehicles, type Vehicle } from "@/lib/vehicles";
+import { createBooking, type TransferType } from "@/lib/bookings";
+import { vehicleImage } from "@/lib/vehicleImages";
+import { cn } from "@/lib/utils";
+import { useSeo } from "@/lib/useSeo";
+
+type Step = 1 | 2 | 3;
+
+export default function Booking() {
+  useSeo({
+    title: "Book your ride — Ride Chic",
+    description: "Reserve a chauffeur in 3 simple steps.",
+  });
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [step, setStep] = useState<Step>(1);
+
+  const initType = (searchParams.get("type") as TransferType | null) ?? "one_way";
+
+  const [date, setDate] = useState(searchParams.get("date") ?? "");
+  const [time, setTime] = useState(searchParams.get("time") ?? "");
+  const [pickup, setPickup] = useState(searchParams.get("pickup") ?? "");
+  const [dropoff, setDropoff] = useState(searchParams.get("dropoff") ?? "");
+  const [transferType, setTransferType] = useState<TransferType>(initType);
+  const [passengers, setPassengers] = useState(1);
+  const [luggage, setLuggage] = useState(1);
+  const [extraWait, setExtraWait] = useState(Number(searchParams.get("wait") ?? 0));
+  const [estimatedKm, setEstimatedKm] = useState(Number(searchParams.get("km") ?? 25));
+
+  const [vehicleId, setVehicleId] = useState<string>(searchParams.get("vehicle") ?? "");
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const { data: vehicles = [] } = useQuery({ queryKey: ["vehicles"], queryFn: listVehicles });
+  const mutation = useMutation({
+    mutationFn: createBooking,
+    onSuccess: (res) => {
+      toast.success(`Reservation received! Estimated price: $${Number(res?.estimated_price ?? 0).toFixed(2)}`);
+      navigate("/");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const canNext1 = date && time && pickup && dropoff;
+  const canNext2 = !!vehicleId;
+  const selectedVehicle = vehicles.find((v) => v.id === vehicleId);
+
+  const estimatePrice = (v: Vehicle | undefined): number => {
+    if (!v) return 0;
+    const base = Number(v.base_rate);
+    const perKm = Number(v.per_km_rate);
+    const hourly = Number(v.hourly_rate);
+    if (transferType === "hourly") {
+      const hours = Math.max(2, extraWait || 2);
+      return base + hourly * hours;
+    }
+    const mult = transferType === "round_trip" ? 1.9 : 1;
+    return (base + perKm * estimatedKm) * mult + hourly * extraWait;
+  };
+
+  const handleSubmit = () => {
+    if (!vehicleId) return;
+    const pickup_at = new Date(`${date}T${time}:00`).toISOString();
+    mutation.mutate({
+      pickup_at,
+      pickup_location: pickup,
+      dropoff_location: dropoff,
+      transfer_type: transferType,
+      passengers,
+      luggage,
+      extra_wait_hours: extraWait,
+      estimated_km: estimatedKm,
+      vehicle_id: vehicleId,
+      customer_name: name,
+      customer_email: email,
+      customer_phone: phone,
+      notes,
+    });
+  };
+
+  return (
+    <>
+      <Header />
+      <main className="pt-32 pb-24">
+        <div className="container mx-auto px-4 md:px-8 max-w-5xl">
+          <h1 className="font-display text-4xl md:text-5xl text-silver-bright text-center">
+            Reserve your <span className="italic text-primary">ride</span>
+          </h1>
+
+          <div className="mt-10 flex items-center justify-center gap-4 md:gap-8">
+            {([1, 2, 3] as const).map((n) => (
+              <div key={n} className="flex items-center gap-3">
+                <div className={cn("size-10 rounded-full grid place-items-center font-display text-lg border-2 transition-colors", step >= n ? "bg-primary border-primary text-primary-foreground" : "border-border text-muted-foreground")}>
+                  {step > n ? <Check className="size-5" /> : n}
+                </div>
+                <span className={cn("hidden sm:inline text-sm", step >= n ? "text-silver-bright" : "text-muted-foreground")}>
+                  {n === 1 ? "Trip" : n === 2 ? "Vehicle" : "Details"}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <Card className="mt-10 p-6 md:p-8 bg-card/70">
+            {step === 1 && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Date</Label>
+                    <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Time</Label>
+                    <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Pickup location</Label>
+                    <Input value={pickup} onChange={(e) => setPickup(e.target.value)} placeholder="Address, hotel or airport" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Drop-off location</Label>
+                    <Input value={dropoff} onChange={(e) => setDropoff(e.target.value)} placeholder="Destination" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Transfer type</Label>
+                    <Select value={transferType} onValueChange={(v) => setTransferType(v as TransferType)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="one_way">One way</SelectItem>
+                        <SelectItem value="round_trip">Round trip</SelectItem>
+                        <SelectItem value="hourly">Hourly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{transferType === "hourly" ? "Hours" : "Extra wait hours"}</Label>
+                    <Input type="number" min={0} max={24} step={0.5} value={extraWait} onChange={(e) => setExtraWait(Number(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Passengers</Label>
+                    <Input type="number" min={1} max={20} value={passengers} onChange={(e) => setPassengers(Number(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Luggage</Label>
+                    <Input type="number" min={0} max={30} value={luggage} onChange={(e) => setLuggage(Number(e.target.value))} />
+                  </div>
+                  {transferType !== "hourly" && (
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Estimated distance (km)</Label>
+                      <Input type="number" min={1} max={2000} value={estimatedKm} onChange={(e) => setEstimatedKm(Number(e.target.value))} />
+                      <p className="text-xs text-muted-foreground">Approximate — we'll confirm final pricing on confirmation.</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-end pt-4">
+                  <Button onClick={() => setStep(2)} disabled={!canNext1} className="bg-primary hover:bg-primary/90">
+                    Choose vehicle <ArrowRight className="ml-2 size-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  {vehicles.map((v) => {
+                    const price = estimatePrice(v);
+                    const selected = vehicleId === v.id;
+                    return (
+                      <button key={v.id} onClick={() => setVehicleId(v.id)} className={cn("text-left rounded-xl border overflow-hidden bg-card transition-all", selected ? "border-primary shadow-[var(--shadow-glow)]" : "border-border hover:border-primary/50")}>
+                        <div className="aspect-[16/9] overflow-hidden">
+                          <img src={vehicleImage(v.category)} alt={v.name} loading="lazy" className="size-full object-cover" />
+                        </div>
+                        <div className="p-5">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-xs tracking-wider text-primary uppercase">{v.category}</p>
+                              <h3 className="font-display text-xl text-silver-bright mt-1">{v.name}</h3>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-display text-2xl text-silver-bright">${price.toFixed(0)}</p>
+                              <p className="text-xs text-muted-foreground">estimated</p>
+                            </div>
+                          </div>
+                          <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{v.description}</p>
+                          <div className="mt-4 flex gap-4 text-xs text-silver">
+                            <span className="flex items-center gap-1"><Users className="size-3.5 text-primary" />{v.capacity_passengers}</span>
+                            <span className="flex items-center gap-1"><Bag className="size-3.5 text-primary" />{v.capacity_luggage}</span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex justify-between pt-4">
+                  <Button variant="ghost" onClick={() => setStep(1)}><ArrowLeft className="mr-2 size-4" /> Back</Button>
+                  <Button onClick={() => setStep(3)} disabled={!canNext2} className="bg-primary hover:bg-primary/90">
+                    Continue <ArrowRight className="ml-2 size-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Full name</Label>
+                    <Input value={name} onChange={(e) => setName(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Phone</Label>
+                    <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Notes (optional)</Label>
+                    <Textarea rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Flight number, special requests…" />
+                  </div>
+                </div>
+
+                {selectedVehicle && (
+                  <div className="rounded-lg border border-primary/30 bg-card p-5">
+                    <p className="text-xs tracking-wider text-primary uppercase">Summary</p>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="text-silver-bright font-display text-lg">{selectedVehicle.name}</p>
+                        <p className="text-sm text-muted-foreground">{pickup} → {dropoff}</p>
+                        <p className="text-sm text-muted-foreground">{date} at {time} · {passengers} pax · {luggage} bags</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-display text-3xl text-silver-bright">${estimatePrice(selectedVehicle).toFixed(0)}</p>
+                        <p className="text-xs text-muted-foreground">estimated</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-between pt-4">
+                  <Button variant="ghost" onClick={() => setStep(2)}><ArrowLeft className="mr-2 size-4" /> Back</Button>
+                  <Button onClick={handleSubmit} disabled={!name || !email || !phone || mutation.isPending} className="bg-primary hover:bg-primary/90">
+                    {mutation.isPending ? "Sending…" : "Confirm reservation"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
