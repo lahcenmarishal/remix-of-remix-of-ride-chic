@@ -6,7 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { listVehicles } from "@/lib/vehicles";
-import { vehicleImage } from "@/lib/vehicleImages";
+import { VehicleImage } from "@/components/site/VehicleImage";
 import { useSeo } from "@/lib/useSeo";
 
 export default function Fleet() {
@@ -37,7 +37,7 @@ export default function Fleet() {
               {vehicles.map((v) => (
                 <Card key={v.id} className="overflow-hidden p-0 bg-card/60 hover:border-primary/50 transition-all">
                   <div className="aspect-[16/10] overflow-hidden">
-                    <img src={vehicleImage(v.category)} alt={v.name} loading="lazy" width={1024} height={640} className="size-full object-cover" />
+                    <VehicleImage imagePath={v.image_url} category={v.category} alt={v.name} className="size-full object-cover" />
                   </div>
                   <div className="p-8">
                     <p className="text-xs tracking-[0.2em] text-primary uppercase">{v.category}</p>
