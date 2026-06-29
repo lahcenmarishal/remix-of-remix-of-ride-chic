@@ -157,6 +157,7 @@ function FleetManager() {
       hourly_rate: Number(v.hourly_rate),
       sort_order: v.sort_order,
       active: v.active,
+      image_url: v.image_url,
     });
     setOpen(true);
   };
@@ -164,6 +165,23 @@ function FleetManager() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editing) updateMut.mutate(); else createMut.mutate();
+  };
+
+  const [uploading, setUploading] = useState(false);
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const path = await uploadVehicleImage(file);
+      setForm((f) => ({ ...f, image_url: path }));
+      toast.success("Image uploaded");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   return (
@@ -198,6 +216,22 @@ function FleetManager() {
               <div className="space-y-2">
                 <Label>Description</Label>
                 <Textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Vehicle image</Label>
+                <div className="flex items-center gap-4">
+                  <div className="w-32 h-20 rounded-md overflow-hidden bg-muted shrink-0">
+                    <VehicleImage imagePath={form.image_url ?? null} category={form.category} alt="Preview" className="size-full object-cover" />
+                  </div>
+                  <label className="inline-flex items-center gap-2 cursor-pointer text-sm px-3 py-2 rounded-md border border-border hover:bg-muted">
+                    <Upload className="size-4" />
+                    {uploading ? "Uploading…" : form.image_url ? "Replace image" : "Upload image"}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} disabled={uploading} />
+                  </label>
+                  {form.image_url && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setForm({ ...form, image_url: null })}>Remove</Button>
+                  )}
+                </div>
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
