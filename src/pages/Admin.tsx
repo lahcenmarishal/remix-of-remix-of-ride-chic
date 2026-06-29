@@ -318,3 +318,75 @@ function FleetManager() {
     </div>
   );
 }
+
+const emptySettings: SiteSettings = {
+  contact_phone: "",
+  contact_email: "",
+  service_area: "",
+  hours: "",
+  address: "",
+  facebook_url: "",
+  twitter_url: "",
+  linkedin_url: "",
+  instagram_url: "",
+};
+
+function SettingsManager() {
+  const qc = useQueryClient();
+  const { data, isLoading } = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings });
+  const [form, setForm] = useState<SiteSettings>(emptySettings);
+
+  useEffect(() => {
+    if (data) setForm({ ...emptySettings, ...data });
+  }, [data]);
+
+  const mut = useMutation({
+    mutationFn: () => updateSiteSettings(form),
+    onSuccess: () => {
+      toast.success("Settings saved");
+      qc.invalidateQueries({ queryKey: ["site-settings"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mut.mutate();
+  };
+
+  const field = (k: keyof SiteSettings, label: string, type = "text") => (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input type={type} value={(form[k] ?? "") as string} onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
+    </div>
+  );
+
+  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
+
+  return (
+    <form onSubmit={submit} className="max-w-3xl space-y-6">
+      <h2 className="font-display text-2xl text-silver-bright">Contact &amp; site info</h2>
+      <p className="text-sm text-muted-foreground">These values appear on the Contact page and in the footer across the site.</p>
+      <div className="grid sm:grid-cols-2 gap-4">
+        {field("contact_phone", "Phone")}
+        {field("contact_email", "Email", "email")}
+        {field("service_area", "Service area")}
+        {field("hours", "Hours")}
+      </div>
+      <div className="space-y-2">
+        <Label>Address</Label>
+        <Textarea value={form.address ?? ""} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+      </div>
+      <h3 className="font-display text-lg text-silver-bright pt-4">Social links</h3>
+      <div className="grid sm:grid-cols-2 gap-4">
+        {field("facebook_url", "Facebook URL", "url")}
+        {field("twitter_url", "X / Twitter URL", "url")}
+        {field("linkedin_url", "LinkedIn URL", "url")}
+        {field("instagram_url", "Instagram URL", "url")}
+      </div>
+      <Button type="submit" disabled={mut.isPending} className="bg-primary hover:bg-primary/90">
+        {mut.isPending ? "Saving…" : "Save changes"}
+      </Button>
+    </form>
+  );
+}
