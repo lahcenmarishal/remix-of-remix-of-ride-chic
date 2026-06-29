@@ -17,6 +17,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,10 +28,24 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null));
+    const checkAdmin = async (uid: string | undefined) => {
+      if (!uid) return setIsAdmin(false);
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", uid)
+        .eq("role", "admin")
+        .maybeSingle();
+      setIsAdmin(!!data);
+    };
+    supabase.auth.getUser().then(({ data }) => {
+      setUserEmail(data.user?.email ?? null);
+      checkAdmin(data.user?.id);
+    });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         setUserEmail(session?.user?.email ?? null);
+        checkAdmin(session?.user?.id);
       }
     });
     return () => sub.subscription.unsubscribe();
@@ -68,13 +83,15 @@ export function Header() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
+          {isAdmin && (
+            <Link to="/admin" aria-label="Admin dashboard">
+              <Button variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10">
+                <ShieldCheck className="size-4 mr-2" /> Admin
+              </Button>
+            </Link>
+          )}
           {userEmail && (
             <>
-              <Link to="/admin">
-                <Button variant="ghost" size="sm" className="text-silver hover:text-silver-bright">
-                  <ShieldCheck className="size-4 mr-2" /> Admin
-                </Button>
-              </Link>
               <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-silver" aria-label="Sign out">
                 <LogOut className="size-4" />
               </Button>
@@ -110,11 +127,13 @@ export function Header() {
               </Link>
             ))}
             <div className="flex flex-col gap-2 pt-3 border-t border-border mt-2">
+              {isAdmin && (
+                <Link to="/admin" onClick={() => setOpen(false)}>
+                  <Button variant="outline" className="w-full"><ShieldCheck className="size-4 mr-2" /> Admin</Button>
+                </Link>
+              )}
               {userEmail && (
                 <>
-                  <Link to="/admin" onClick={() => setOpen(false)}>
-                    <Button variant="outline" className="w-full">Admin</Button>
-                  </Link>
                   <Button variant="ghost" onClick={handleSignOut}>Sign out</Button>
                 </>
               )}
