@@ -1,16 +1,16 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { Plane, Briefcase, Heart, Calendar, Clock, ShieldCheck, Star, ArrowRight } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { BookingWidget } from "@/components/site/BookingWidget";
+import { VehicleImage } from "@/components/site/VehicleImage";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useSeo } from "@/lib/useSeo";
+import { listVehicles } from "@/lib/vehicles";
 import heroImg from "@/assets/hero-road.jpg";
-import sedan from "@/assets/vehicle-sedan.jpg";
-import suv from "@/assets/vehicle-suv.jpg";
-import limo from "@/assets/vehicle-limo.jpg";
 
 const services = [
   { icon: Plane, title: "Airport transfers", desc: "Flight-tracked pickups, meet & greet, no rush." },
@@ -20,18 +20,14 @@ const services = [
   { icon: Clock, title: "Hourly service", desc: "Reserve a chauffeur for the hour with full flexibility." },
 ];
 
-const fleet = [
-  { name: "Executive Sedan", img: sedan, desc: "Mercedes-Benz S-Class — discreet, refined." },
-  { name: "Luxury SUV", img: suv, desc: "Cadillac Escalade — space and comfort." },
-  { name: "Stretch Limousine", img: limo, desc: "Classic stretch for unforgettable nights." },
-];
-
 export default function Home() {
   useSeo({
     title: "Ride Chic — Your elegant ride awaits",
     description: "Book a premium chauffeur, executive sedan, SUV, or stretch limousine. Airport transfers, weddings, corporate events.",
     ogImage: heroImg,
   });
+  const { data: vehicles = [] } = useQuery({ queryKey: ["vehicles"], queryFn: listVehicles });
+  const featured = vehicles.slice(0, 3);
   return (
     <>
       <Header />
@@ -86,17 +82,24 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {fleet.map((v, i) => (
-              <motion.div key={v.name} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: i * 0.1 }} className="group rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 transition-all">
-                <div className="aspect-[4/3] overflow-hidden">
-                  <img src={v.img} alt={v.name} loading="lazy" width={1024} height={768} className="size-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                </div>
-                <div className="p-6">
-                  <h3 className="font-display text-2xl text-silver-bright">{v.name}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{v.desc}</p>
-                </div>
+            {featured.map((v, i) => (
+              <motion.div key={v.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: i * 0.1 }}>
+                <Link to={`/booking?vehicle=${v.id}`} className="group block rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 transition-all">
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <VehicleImage imagePath={v.image_url} category={v.category} alt={v.name} className="size-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  </div>
+                  <div className="p-6">
+                    <p className="text-xs tracking-[0.2em] text-primary uppercase">{v.category}</p>
+                    <h3 className="mt-1 font-display text-2xl text-silver-bright">{v.name}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{v.description}</p>
+                    <p className="mt-4 text-sm text-silver-bright">from ${Number(v.base_rate).toFixed(0)}</p>
+                  </div>
+                </Link>
               </motion.div>
             ))}
+            {featured.length === 0 && (
+              <p className="text-muted-foreground">Fleet coming soon.</p>
+            )}
           </div>
         </div>
       </section>
