@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, Pencil, Trash2, Upload } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Card } from "@/components/ui/card";
@@ -17,7 +17,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { listAllBookings, updateBookingStatus, type BookingStatus } from "@/lib/bookings";
-import { listAllVehiclesAdmin, createVehicle, updateVehicle, deleteVehicle, type AdminVehicle, type VehicleInput } from "@/lib/vehicles";
+import { listAllVehiclesAdmin, createVehicle, updateVehicle, deleteVehicle, uploadVehicleImage, type AdminVehicle, type VehicleInput } from "@/lib/vehicles";
+import { VehicleImage } from "@/components/site/VehicleImage";
+import { getSiteSettings, updateSiteSettings, type SiteSettings } from "@/lib/settings";
 import { useSeo } from "@/lib/useSeo";
 
 const emptyVehicle: VehicleInput = {
@@ -31,6 +33,7 @@ const emptyVehicle: VehicleInput = {
   hourly_rate: 0,
   sort_order: 0,
   active: true,
+  image_url: null,
 };
 
 export default function Admin() {
@@ -58,6 +61,7 @@ export default function Admin() {
             <TabsList>
               <TabsTrigger value="bookings">Reservations</TabsTrigger>
               <TabsTrigger value="fleet">Fleet</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
             <TabsContent value="bookings" className="mt-6">
@@ -98,6 +102,10 @@ export default function Admin() {
 
             <TabsContent value="fleet" className="mt-6">
               <FleetManager />
+            </TabsContent>
+
+            <TabsContent value="settings" className="mt-6">
+              <SettingsManager />
             </TabsContent>
           </Tabs>
         </div>
