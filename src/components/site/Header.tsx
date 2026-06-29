@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X, LogOut, ShieldCheck } from "lucide-react";
+import { Menu, X, LogOut, ShieldCheck, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -83,13 +83,12 @@ export function Header() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
-          {isAdmin && (
-            <Link to="/admin" aria-label="Admin dashboard">
-              <Button variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10">
-                <ShieldCheck className="size-4 mr-2" /> Admin
-              </Button>
-            </Link>
-          )}
+          <Link to={userEmail ? (isAdmin ? "/admin" : "/my-bookings") : "/auth"} aria-label={userEmail ? (isAdmin ? "Admin dashboard" : "My bookings") : "Sign in"}>
+            <Button variant="outline" size="sm" className="border-primary/40 text-primary hover:bg-primary/10">
+              {isAdmin ? <ShieldCheck className="size-4 mr-2" /> : <LogIn className="size-4 mr-2" />}
+              {userEmail ? (isAdmin ? "Admin" : "Account") : "Sign in"}
+            </Button>
+          </Link>
           {userEmail && (
             <>
               <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-silver" aria-label="Sign out">
@@ -127,11 +126,12 @@ export function Header() {
               </Link>
             ))}
             <div className="flex flex-col gap-2 pt-3 border-t border-border mt-2">
-              {isAdmin && (
-                <Link to="/admin" onClick={() => setOpen(false)}>
-                  <Button variant="outline" className="w-full"><ShieldCheck className="size-4 mr-2" /> Admin</Button>
-                </Link>
-              )}
+              <Link to={userEmail ? (isAdmin ? "/admin" : "/my-bookings") : "/auth"} onClick={() => setOpen(false)}>
+                <Button variant="outline" className="w-full">
+                  {isAdmin ? <ShieldCheck className="size-4 mr-2" /> : <LogIn className="size-4 mr-2" />}
+                  {userEmail ? (isAdmin ? "Admin" : "Account") : "Sign in"}
+                </Button>
+              </Link>
               {userEmail && (
                 <>
                   <Button variant="ghost" onClick={handleSignOut}>Sign out</Button>

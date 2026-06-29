@@ -1,14 +1,21 @@
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Card } from "@/components/ui/card";
 import { useSeo } from "@/lib/useSeo";
+import { getSiteSettings } from "@/lib/settings";
 
 export default function Contact() {
   useSeo({
     title: "Contact — Ride Chic",
     description: "Get in touch with Ride Chic. Phone, email, 24/7 service.",
   });
+  const { data: s } = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings });
+  const phone = s?.contact_phone ?? "+1 617 483 5676";
+  const email = s?.contact_email ?? "info@ridechic.com";
+  const area = s?.service_area ?? "Boston metropolitan area and surrounding";
+  const hours = s?.hours ?? "24 hours / 7 days";
   return (
     <>
       <Header />
@@ -24,25 +31,25 @@ export default function Contact() {
             <Card className="p-8 bg-card/60">
               <Phone className="size-8 text-primary mb-4" />
               <h3 className="font-display text-xl text-silver-bright">Phone</h3>
-              <a href="tel:+16174835676" className="mt-2 block text-lg text-silver hover:text-silver-bright">+1 617 483 5676</a>
+              <a href={`tel:${phone.replace(/\s+/g, "")}`} className="mt-2 block text-lg text-silver hover:text-silver-bright">{phone}</a>
               <p className="mt-2 text-sm text-muted-foreground">Available 24/7</p>
             </Card>
             <Card className="p-8 bg-card/60">
               <Mail className="size-8 text-primary mb-4" />
               <h3 className="font-display text-xl text-silver-bright">Email</h3>
-              <a href="mailto:info@ridechic.com" className="mt-2 block text-lg text-silver hover:text-silver-bright">info@ridechic.com</a>
+              <a href={`mailto:${email}`} className="mt-2 block text-lg text-silver hover:text-silver-bright">{email}</a>
               <p className="mt-2 text-sm text-muted-foreground">Replies within 1 hour</p>
             </Card>
             <Card className="p-8 bg-card/60">
               <MapPin className="size-8 text-primary mb-4" />
               <h3 className="font-display text-xl text-silver-bright">Service area</h3>
-              <p className="mt-2 text-silver">Boston metropolitan area and surrounding</p>
-              <p className="mt-2 text-sm text-muted-foreground">Long-distance on request</p>
+              <p className="mt-2 text-silver">{area}</p>
+              {s?.address && <p className="mt-2 text-sm text-muted-foreground">{s.address}</p>}
             </Card>
             <Card className="p-8 bg-card/60">
               <Clock className="size-8 text-primary mb-4" />
               <h3 className="font-display text-xl text-silver-bright">Hours</h3>
-              <p className="mt-2 text-silver">24 hours / 7 days</p>
+              <p className="mt-2 text-silver">{hours}</p>
               <p className="mt-2 text-sm text-muted-foreground">Reserve any time, any day</p>
             </Card>
           </div>

@@ -1,7 +1,18 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone } from "lucide-react";
+import { getSiteSettings } from "@/lib/settings";
 
 export function Footer() {
+  const { data: s } = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings });
+  const phone = s?.contact_phone ?? "+1 617 483 5676";
+  const email = s?.contact_email ?? "info@ridechic.com";
+  const socials = [
+    { href: s?.facebook_url, Icon: Facebook },
+    { href: s?.twitter_url, Icon: Twitter },
+    { href: s?.linkedin_url, Icon: Linkedin },
+    { href: s?.instagram_url, Icon: Instagram },
+  ].filter((x) => !!x.href) as { href: string; Icon: typeof Facebook }[];
   return (
     <footer className="bg-card/40 border-t border-border mt-24">
       <div className="container mx-auto px-4 md:px-8 py-16 grid gap-12 md:grid-cols-4">
@@ -28,20 +39,15 @@ export function Footer() {
         <div>
           <h4 className="text-sm font-semibold uppercase tracking-wider text-silver-bright mb-4">Contact</h4>
           <ul className="space-y-3 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2"><Phone className="size-4 text-primary" /><a href="tel:+16174835676">+1 617 483 5676</a></li>
-            <li className="flex items-center gap-2"><Mail className="size-4 text-primary" /><a href="mailto:info@ridechic.com">info@ridechic.com</a></li>
+            <li className="flex items-center gap-2"><Phone className="size-4 text-primary" /><a href={`tel:${phone.replace(/\s+/g, "")}`}>{phone}</a></li>
+            <li className="flex items-center gap-2"><Mail className="size-4 text-primary" /><a href={`mailto:${email}`}>{email}</a></li>
           </ul>
         </div>
 
         <div>
           <h4 className="text-sm font-semibold uppercase tracking-wider text-silver-bright mb-4">Follow</h4>
           <div className="flex gap-3">
-            {[
-              { href: "https://facebook.com/ridechic", Icon: Facebook },
-              { href: "https://x.com/ridechicaz", Icon: Twitter },
-              { href: "https://linkedin.com/company/ridechic", Icon: Linkedin },
-              { href: "https://instagram.com/ridechic", Icon: Instagram },
-            ].map(({ href, Icon }, i) => (
+            {socials.map(({ href, Icon }, i) => (
               <a
                 key={i}
                 href={href}

@@ -112,6 +112,48 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          facebook_url: string | null
+          hours: string | null
+          id: boolean
+          instagram_url: string | null
+          linkedin_url: string | null
+          service_area: string | null
+          twitter_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          facebook_url?: string | null
+          hours?: string | null
+          id?: boolean
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          service_area?: string | null
+          twitter_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          facebook_url?: string | null
+          hours?: string | null
+          id?: boolean
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          service_area?: string | null
+          twitter_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

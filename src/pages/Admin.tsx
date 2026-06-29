@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, Pencil, Trash2, Upload } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Card } from "@/components/ui/card";
@@ -17,7 +17,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { listAllBookings, updateBookingStatus, type BookingStatus } from "@/lib/bookings";
-import { listAllVehiclesAdmin, createVehicle, updateVehicle, deleteVehicle, type AdminVehicle, type VehicleInput } from "@/lib/vehicles";
+import { listAllVehiclesAdmin, createVehicle, updateVehicle, deleteVehicle, uploadVehicleImage, type AdminVehicle, type VehicleInput } from "@/lib/vehicles";
+import { VehicleImage } from "@/components/site/VehicleImage";
+import { getSiteSettings, updateSiteSettings, type SiteSettings } from "@/lib/settings";
 import { useSeo } from "@/lib/useSeo";
 
 const emptyVehicle: VehicleInput = {
@@ -31,6 +33,7 @@ const emptyVehicle: VehicleInput = {
   hourly_rate: 0,
   sort_order: 0,
   active: true,
+  image_url: null,
 };
 
 export default function Admin() {
@@ -58,6 +61,7 @@ export default function Admin() {
             <TabsList>
               <TabsTrigger value="bookings">Reservations</TabsTrigger>
               <TabsTrigger value="fleet">Fleet</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
             <TabsContent value="bookings" className="mt-6">
@@ -98,6 +102,10 @@ export default function Admin() {
 
             <TabsContent value="fleet" className="mt-6">
               <FleetManager />
+            </TabsContent>
+
+            <TabsContent value="settings" className="mt-6">
+              <SettingsManager />
             </TabsContent>
           </Tabs>
         </div>
@@ -149,6 +157,7 @@ function FleetManager() {
       hourly_rate: Number(v.hourly_rate),
       sort_order: v.sort_order,
       active: v.active,
+      image_url: v.image_url,
     });
     setOpen(true);
   };
@@ -156,6 +165,23 @@ function FleetManager() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editing) updateMut.mutate(); else createMut.mutate();
+  };
+
+  const [uploading, setUploading] = useState(false);
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const path = await uploadVehicleImage(file);
+      setForm((f) => ({ ...f, image_url: path }));
+      toast.success("Image uploaded");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   return (
@@ -190,6 +216,22 @@ function FleetManager() {
               <div className="space-y-2">
                 <Label>Description</Label>
                 <Textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Vehicle image</Label>
+                <div className="flex items-center gap-4">
+                  <div className="w-32 h-20 rounded-md overflow-hidden bg-muted shrink-0">
+                    <VehicleImage imagePath={form.image_url ?? null} category={form.category} alt="Preview" className="size-full object-cover" />
+                  </div>
+                  <label className="inline-flex items-center gap-2 cursor-pointer text-sm px-3 py-2 rounded-md border border-border hover:bg-muted">
+                    <Upload className="size-4" />
+                    {uploading ? "Uploading…" : form.image_url ? "Replace image" : "Upload image"}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} disabled={uploading} />
+                  </label>
+                  {form.image_url && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setForm({ ...form, image_url: null })}>Remove</Button>
+                  )}
+                </div>
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -274,5 +316,77 @@ function FleetManager() {
         </div>
       )}
     </div>
+  );
+}
+
+const emptySettings: SiteSettings = {
+  contact_phone: "",
+  contact_email: "",
+  service_area: "",
+  hours: "",
+  address: "",
+  facebook_url: "",
+  twitter_url: "",
+  linkedin_url: "",
+  instagram_url: "",
+};
+
+function SettingsManager() {
+  const qc = useQueryClient();
+  const { data, isLoading } = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings });
+  const [form, setForm] = useState<SiteSettings>(emptySettings);
+
+  useEffect(() => {
+    if (data) setForm({ ...emptySettings, ...data });
+  }, [data]);
+
+  const mut = useMutation({
+    mutationFn: () => updateSiteSettings(form),
+    onSuccess: () => {
+      toast.success("Settings saved");
+      qc.invalidateQueries({ queryKey: ["site-settings"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mut.mutate();
+  };
+
+  const field = (k: keyof SiteSettings, label: string, type = "text") => (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input type={type} value={(form[k] ?? "") as string} onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
+    </div>
+  );
+
+  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
+
+  return (
+    <form onSubmit={submit} className="max-w-3xl space-y-6">
+      <h2 className="font-display text-2xl text-silver-bright">Contact &amp; site info</h2>
+      <p className="text-sm text-muted-foreground">These values appear on the Contact page and in the footer across the site.</p>
+      <div className="grid sm:grid-cols-2 gap-4">
+        {field("contact_phone", "Phone")}
+        {field("contact_email", "Email", "email")}
+        {field("service_area", "Service area")}
+        {field("hours", "Hours")}
+      </div>
+      <div className="space-y-2">
+        <Label>Address</Label>
+        <Textarea value={form.address ?? ""} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+      </div>
+      <h3 className="font-display text-lg text-silver-bright pt-4">Social links</h3>
+      <div className="grid sm:grid-cols-2 gap-4">
+        {field("facebook_url", "Facebook URL", "url")}
+        {field("twitter_url", "X / Twitter URL", "url")}
+        {field("linkedin_url", "LinkedIn URL", "url")}
+        {field("instagram_url", "Instagram URL", "url")}
+      </div>
+      <Button type="submit" disabled={mut.isPending} className="bg-primary hover:bg-primary/90">
+        {mut.isPending ? "Saving…" : "Save changes"}
+      </Button>
+    </form>
   );
 }
