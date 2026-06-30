@@ -17,12 +17,12 @@ export function Footer() {
     <footer className="bg-card/40 border-t border-border mt-24">
       <div className="container mx-auto px-4 md:px-8 py-16 grid gap-12 md:grid-cols-4">
         <div>
-          <Link to="/" className="font-display text-2xl text-silver-bright">
-            RIDE<span className="text-primary italic">chic</span>
+          <Link to="/" className="font-display text-xl text-silver-bright leading-tight">
+            SOUTH SHORE <span className="text-primary italic">Limo</span> BOSTON
           </Link>
           <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-            Arrive with distinction. Premium chauffeur and limousine service for executives, weddings,
-            airport transfers, and special occasions.
+            South Shore Limo Boston — premium chauffeur and limousine service for executives, weddings,
+            Logan airport transfers, and special occasions across Boston and the South Shore.
           </p>
         </div>
 
@@ -63,7 +63,7 @@ export function Footer() {
       </div>
       <div className="border-t border-border">
         <div className="container mx-auto px-4 md:px-8 py-6 text-xs text-muted-foreground flex flex-wrap items-center justify-between gap-2">
-          <span>© {new Date().getFullYear()} Ride Chic. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} South Shore Limo Boston. All rights reserved.</span>
           <span>Arrive with distinction.</span>
         </div>
       </div>

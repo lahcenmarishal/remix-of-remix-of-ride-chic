@@ -15,8 +15,8 @@ const services = [
 
 export default function Services() {
   useSeo({
-    title: "Services — Ride Chic",
-    description: "Airport transfers, corporate transport, weddings, special events, hourly service and city tours.",
+    title: "Services — South Shore Limo Boston",
+    description: "South Shore Limo Boston services: Logan airport transfers, corporate transport, weddings, special events, hourly chauffeur and city tours.",
   });
   return (
     <>

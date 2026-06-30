@@ -64,9 +64,9 @@ export function Header() {
       )}
     >
       <div className="container mx-auto flex items-center justify-between px-4 md:px-8 h-20">
-        <Link to="/" className="flex items-center gap-2 group">
-          <span className="font-display text-2xl tracking-wide text-silver-bright">
-            RIDE<span className="text-primary italic">chic</span>
+        <Link to="/" className="flex items-center gap-2 group" aria-label="South Shore Limo Boston home">
+          <span className="font-display text-lg md:text-xl tracking-wide text-silver-bright leading-tight">
+            SOUTH SHORE <span className="text-primary italic">Limo</span> BOSTON
           </span>
         </Link>
 

@@ -8,8 +8,8 @@ import { getSiteSettings } from "@/lib/settings";
 
 export default function Contact() {
   useSeo({
-    title: "Contact — Ride Chic",
-    description: "Get in touch with Ride Chic. Phone, email, 24/7 service.",
+    title: "Contact — South Shore Limo Boston",
+    description: "Contact South Shore Limo Boston for chauffeur reservations, Logan airport transfers, weddings and corporate transport. Available 24/7.",
   });
   const { data: s } = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings });
   const phone = s?.contact_phone ?? "+1 617 483 5676";
@@ -21,7 +21,7 @@ export default function Contact() {
       <Header />
       <main className="pt-32 pb-24">
         <div className="container mx-auto px-4 md:px-8 max-w-4xl">
-          <p className="text-xs tracking-[0.3em] text-primary uppercase">Contact</p>
+          <p className="text-xs tracking-[0.3em] text-primary uppercase">Contact South Shore Limo Boston</p>
           <h1 className="mt-3 font-display text-5xl md:text-6xl text-silver-bright">
             We're here, <span className="italic">always</span>
           </h1>
