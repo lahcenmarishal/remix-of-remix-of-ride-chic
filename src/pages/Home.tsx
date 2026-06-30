@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useSeo } from "@/lib/useSeo";
 import { listVehicles } from "@/lib/vehicles";
-import heroImg from "@/assets/hero-road.jpg";
+import heroImg from "@/assets/fleet-hero.jpg";
 
 const services = [
   { icon: Plane, title: "Airport transfers", desc: "Flight-tracked pickups, meet & greet, no rush." },
@@ -22,8 +22,8 @@ const services = [
 
 export default function Home() {
   useSeo({
-    title: "Ride Chic — Your elegant ride awaits",
-    description: "Book a premium chauffeur, executive sedan, SUV, or stretch limousine. Airport transfers, weddings, corporate events.",
+    title: "South Shore Limo Boston — Premium Chauffeur & Limousine Service",
+    description: "South Shore Limo Boston: book a premium chauffeur, executive sedan, SUV, Sprinter van or stretch limousine for Logan airport transfers, weddings and corporate events.",
     ogImage: heroImg,
   });
   const { data: vehicles = [] } = useQuery({ queryKey: ["vehicles"], queryFn: listVehicles });
@@ -32,17 +32,17 @@ export default function Home() {
     <>
       <Header />
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-24 pb-32">
-        <img src={heroImg} alt="Luxury car light trails on a winding road at night" width={1920} height={1280} className="absolute inset-0 size-full object-cover" />
+        <img src={heroImg} alt="South Shore Limo Boston luxury fleet — Cadillac Escalade, Lincoln Navigator, stretch limousine, Mercedes Sprinter van and executive sedan" width={1920} height={1024} fetchPriority="high" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
         <div className="container relative z-10 mx-auto px-4 md:px-8 text-center">
           <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-xs md:text-sm tracking-[0.4em] text-silver uppercase">
             Arrive with distinction
           </motion.p>
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.15 }} className="mt-4 font-display text-5xl md:text-7xl lg:text-8xl text-silver-bright leading-[1.05]">
-            Your <span className="italic text-primary">Elegant</span> Ride<br />Awaits
+            South Shore <span className="italic text-primary">Limo</span> Boston
           </motion.h1>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.4 }} className="mt-6 max-w-xl mx-auto text-muted-foreground text-base md:text-lg">
-            Premium chauffeur service for those who measure travel in quiet comfort, not minutes.
+            Premium chauffeur and limousine service across Boston and the South Shore — for travelers who measure the journey in quiet comfort.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.6 }} className="mt-16">
             <BookingWidget />

@@ -11,8 +11,8 @@ import { useSeo } from "@/lib/useSeo";
 
 export default function Fleet() {
   useSeo({
-    title: "Fleet — Ride Chic",
-    description: "Executive sedans, luxury SUVs, stretch limousines, Sprinter vans. Late-model, immaculately maintained.",
+    title: "Fleet — South Shore Limo Boston",
+    description: "South Shore Limo Boston fleet: executive sedans, luxury SUVs (Cadillac Escalade, Lincoln Navigator), stretch limousines and Mercedes Sprinter vans.",
   });
   const { data: vehicles = [], isLoading, error } = useQuery({ queryKey: ["vehicles"], queryFn: listVehicles });
   return (
@@ -21,7 +21,7 @@ export default function Fleet() {
       <main className="pt-32 pb-24">
         <div className="container mx-auto px-4 md:px-8">
           <div className="max-w-2xl">
-            <p className="text-xs tracking-[0.3em] text-primary uppercase">The fleet</p>
+            <p className="text-xs tracking-[0.3em] text-primary uppercase">South Shore Limo Boston — The Fleet</p>
             <h1 className="mt-3 font-display text-5xl md:text-6xl text-silver-bright">
               Curated, never <span className="italic">compromised</span>
             </h1>
