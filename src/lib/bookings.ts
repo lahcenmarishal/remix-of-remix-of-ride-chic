@@ -50,7 +50,7 @@ export async function createBooking(data: BookingInput) {
   const { data: userData } = await supabase.auth.getUser();
   const user_id = userData.user?.id ?? null;
 
-  const { data: inserted, error } = await supabase
+  const { error } = await supabase
     .from("bookings")
     .insert({
       user_id,
@@ -68,11 +68,9 @@ export async function createBooking(data: BookingInput) {
       customer_email: data.customer_email,
       customer_phone: data.customer_phone,
       notes: data.notes ?? "",
-    })
-    .select("id,estimated_price")
-    .single();
+    });
   if (error) throw new Error(error.message);
-  return inserted;
+  return { estimated_price: price };
 }
 
 export async function listMyBookings() {
