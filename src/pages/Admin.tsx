@@ -40,6 +40,8 @@ export default function Admin() {
   useSeo({ title: "Admin — Ride Chic", description: "Manage all reservations.", noindex: true });
   const qc = useQueryClient();
   const { data = [], isLoading, error } = useQuery({ queryKey: ["all-bookings"], queryFn: listAllBookings });
+  const { data: vehicles = [] } = useQuery({ queryKey: ["admin-vehicles"], queryFn: listAllVehiclesAdmin });
+  const vehicleMap = new Map(vehicles.map((v) => [v.id, v.name]));
   const mutation = useMutation({
     mutationFn: updateBookingStatus,
     onSuccess: () => {
@@ -74,25 +76,59 @@ export default function Admin() {
           ) : (
             <div className="mt-10 space-y-3">
               {data.map((b) => (
-                <Card key={b.id} className="p-5 bg-card/60 grid md:grid-cols-[1fr_auto_auto] items-center gap-4">
-                  <div>
-                    <p className="text-silver-bright font-medium">{b.customer_name} · {b.customer_email}</p>
-                    <p className="text-sm text-muted-foreground">{b.pickup_location} → {b.dropoff_location}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{format(new Date(b.pickup_at), "PPP p")}</p>
+                <Card key={b.id} className="p-5 bg-card/60 space-y-4">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-silver-bright font-medium">{b.customer_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        <a href={`mailto:${b.customer_email}`} className="hover:text-primary">{b.customer_email}</a>
+                        {b.customer_phone && <> · <a href={`tel:${b.customer_phone}`} className="hover:text-primary">{b.customer_phone}</a></>}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">Ref: {b.id.slice(0, 8)} · Created {format(new Date(b.created_at), "PP p")}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-display text-2xl text-silver-bright">${Number(b.estimated_price).toFixed(0)}</span>
+                      <Badge variant="outline">{b.status}</Badge>
+                      <Select value={b.status} onValueChange={(v) => mutation.mutate({ id: b.id, status: v as BookingStatus })}>
+                        <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="confirmed">Confirmed</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <span className="font-display text-xl text-silver-bright">${Number(b.estimated_price).toFixed(0)}</span>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline">{b.status}</Badge>
-                    <Select value={b.status} onValueChange={(v) => mutation.mutate({ id: b.id, status: v as BookingStatus })}>
-                      <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="confirmed">Confirmed</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
+
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">Pickup</p>
+                      <p className="text-silver-bright">{format(new Date(b.pickup_at), "PPP p")}</p>
+                      <p className="text-muted-foreground">{b.pickup_location}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">Dropoff</p>
+                      <p className="text-silver-bright">{b.dropoff_location}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">Service</p>
+                      <p className="text-silver-bright capitalize">{b.transfer_type.replace("_", " ")}</p>
+                      <p className="text-muted-foreground">{vehicleMap.get(b.vehicle_id) ?? "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">Details</p>
+                      <p className="text-muted-foreground">{b.passengers} pax · {b.luggage} bags</p>
+                      <p className="text-muted-foreground">{Number(b.estimated_km)} km · +{b.extra_wait_hours}h wait</p>
+                    </div>
                   </div>
+
+                  {b.notes && (
+                    <div className="text-sm">
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">Notes</p>
+                      <p className="text-silver">{b.notes}</p>
+                    </div>
+                  )}
                 </Card>
               ))}
               {data.length === 0 && <p className="text-muted-foreground">No reservations yet.</p>}
