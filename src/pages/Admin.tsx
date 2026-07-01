@@ -114,7 +114,7 @@ export default function Admin() {
                     <div>
                       <p className="text-xs uppercase tracking-wider text-muted-foreground">Service</p>
                       <p className="text-silver-bright capitalize">{b.transfer_type.replace("_", " ")}</p>
-                      <p className="text-muted-foreground">{vehicleMap.get(b.vehicle_id) ?? "—"}</p>
+                      <p className="text-muted-foreground">{(b.vehicle_id && vehicleMap.get(b.vehicle_id)) || "—"}</p>
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-wider text-muted-foreground">Details</p>
