@@ -138,7 +138,7 @@ export default function Home() {
             {[
               { q: "On time to the minute, S-Class spotless, driver impeccable. The bar has been set.", n: "Élise R.", r: "Corporate client" },
               { q: "Booked the stretch for our wedding. Felt like a film. The team handled every detail.", n: "Marc & Léa", r: "Wedding 2025" },
-              { q: "I fly weekly. Ride Chic is the only service I trust for early-morning JFK runs.", n: "Daniel K.", r: "Frequent flyer" },
+              { q: "I fly weekly. South Shore Limo Boston is the only service I trust for early-morning Logan runs.", n: "Daniel K.", r: "Frequent flyer" },
             ].map((t) => (
               <Card key={t.n} className="p-8 bg-card/60">
                 <div className="flex gap-1 text-primary mb-4">
