@@ -92,7 +92,7 @@ export default function Home() {
                     <p className="text-xs tracking-[0.2em] text-primary uppercase">{v.category}</p>
                     <h3 className="mt-1 font-display text-2xl text-silver-bright">{v.name}</h3>
                     <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{v.description}</p>
-                    <p className="mt-4 text-sm text-silver-bright">from ${Number(v.base_rate).toFixed(0)}</p>
+                    <p className="mt-4 text-sm text-primary">Quote on request</p>
                   </div>
                 </Link>
               </motion.div>
