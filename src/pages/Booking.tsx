@@ -21,8 +21,8 @@ type Step = 1 | 2 | 3;
 
 export default function Booking() {
   useSeo({
-    title: "Book your ride — Ride Chic",
-    description: "Reserve a chauffeur in 3 simple steps.",
+    title: "Request a quote — South Shore Limo Boston",
+    description: "Request a chauffeur quote in 3 simple steps. Final price confirmed by our team.",
   });
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -50,8 +50,8 @@ export default function Booking() {
   const { data: vehicles = [] } = useQuery({ queryKey: ["vehicles"], queryFn: listVehicles });
   const mutation = useMutation({
     mutationFn: createBooking,
-    onSuccess: (res) => {
-      toast.success(`Reservation received! Estimated price: $${Number(res?.estimated_price ?? 0).toFixed(2)}`);
+    onSuccess: () => {
+      toast.success("Quote request received! We'll confirm your final price by email or phone shortly.");
       navigate("/");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -60,19 +60,6 @@ export default function Booking() {
   const canNext1 = date && time && pickup && dropoff;
   const canNext2 = !!vehicleId;
   const selectedVehicle = vehicles.find((v) => v.id === vehicleId);
-
-  const estimatePrice = (v: Vehicle | undefined): number => {
-    if (!v) return 0;
-    const base = Number(v.base_rate);
-    const perKm = Number(v.per_km_rate);
-    const hourly = Number(v.hourly_rate);
-    if (transferType === "hourly") {
-      const hours = Math.max(2, extraWait || 2);
-      return base + hourly * hours;
-    }
-    const mult = transferType === "round_trip" ? 1.9 : 1;
-    return (base + perKm * estimatedKm) * mult + hourly * extraWait;
-  };
 
   const handleSubmit = () => {
     if (!vehicleId) return;
@@ -177,9 +164,11 @@ export default function Booking() {
 
             {step === 2 && (
               <div className="space-y-6">
+                <p className="text-sm text-muted-foreground">
+                  Pick a vehicle. Rates below are indicative — your final quote is confirmed by our team after we validate the itinerary.
+                </p>
                 <div className="grid md:grid-cols-2 gap-4">
                   {vehicles.map((v) => {
-                    const price = estimatePrice(v);
                     const selected = vehicleId === v.id;
                     return (
                       <button key={v.id} onClick={() => setVehicleId(v.id)} className={cn("text-left rounded-xl border overflow-hidden bg-card transition-all", selected ? "border-primary shadow-[var(--shadow-glow)]" : "border-border hover:border-primary/50")}>
@@ -193,14 +182,19 @@ export default function Booking() {
                               <h3 className="font-display text-xl text-silver-bright mt-1">{v.name}</h3>
                             </div>
                             <div className="text-right">
-                              <p className="font-display text-2xl text-silver-bright">${price.toFixed(0)}</p>
-                              <p className="text-xs text-muted-foreground">estimated</p>
+                              <p className="text-xs text-primary uppercase tracking-wider">Quote</p>
+                              <p className="text-xs text-muted-foreground">on request</p>
                             </div>
                           </div>
                           <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{v.description}</p>
-                          <div className="mt-4 flex gap-4 text-xs text-silver">
+                          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-silver">
                             <span className="flex items-center gap-1"><Users className="size-3.5 text-primary" />{v.capacity_passengers}</span>
                             <span className="flex items-center gap-1"><Bag className="size-3.5 text-primary" />{v.capacity_luggage}</span>
+                          </div>
+                          <div className="mt-3 pt-3 border-t border-border/60 text-xs text-muted-foreground space-y-0.5">
+                            <div className="flex justify-between"><span>Base fare</span><span className="text-silver">${Number(v.base_rate).toFixed(0)}</span></div>
+                            <div className="flex justify-between"><span>Per km</span><span className="text-silver">${Number(v.per_km_rate).toFixed(2)}</span></div>
+                            <div className="flex justify-between"><span>Hourly / wait</span><span className="text-silver">${Number(v.hourly_rate).toFixed(0)}/h</span></div>
                           </div>
                         </div>
                       </button>
@@ -246,9 +240,9 @@ export default function Booking() {
                         <p className="text-sm text-muted-foreground">{pickup} → {dropoff}</p>
                         <p className="text-sm text-muted-foreground">{date} at {time} · {passengers} pax · {luggage} bags</p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-display text-3xl text-silver-bright">${estimatePrice(selectedVehicle).toFixed(0)}</p>
-                        <p className="text-xs text-muted-foreground">estimated</p>
+                      <div className="text-right max-w-[16rem]">
+                        <p className="text-sm text-primary font-medium">Quote on request</p>
+                        <p className="text-xs text-muted-foreground mt-1">Final price confirmed by our team by email or phone within minutes.</p>
                       </div>
                     </div>
                   </div>
@@ -257,7 +251,7 @@ export default function Booking() {
                 <div className="flex justify-between pt-4">
                   <Button variant="ghost" onClick={() => setStep(2)}><ArrowLeft className="mr-2 size-4" /> Back</Button>
                   <Button onClick={handleSubmit} disabled={!name || !email || !phone || mutation.isPending} className="bg-primary hover:bg-primary/90">
-                    {mutation.isPending ? "Sending…" : "Confirm reservation"}
+                    {mutation.isPending ? "Sending…" : "Request quote"}
                   </Button>
                 </div>
               </div>
