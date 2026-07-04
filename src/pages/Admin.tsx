@@ -41,7 +41,7 @@ export default function Admin() {
   const qc = useQueryClient();
   const { data = [], isLoading, error } = useQuery({ queryKey: ["all-bookings"], queryFn: listAllBookings });
   const { data: vehicles = [] } = useQuery({ queryKey: ["admin-vehicles"], queryFn: listAllVehiclesAdmin });
-  const vehicleMap = new Map(vehicles.map((v) => [v.id, v.name]));
+  const vehicleMap = new Map(vehicles.map((v) => [v.id, v]));
   const mutation = useMutation({
     mutationFn: updateBookingStatus,
     onSuccess: () => {
@@ -87,7 +87,11 @@ export default function Admin() {
                       <p className="text-xs text-muted-foreground mt-1">Ref: {b.id.slice(0, 8)} · Created {format(new Date(b.created_at), "PP p")}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="font-display text-2xl text-silver-bright">${Number(b.estimated_price).toFixed(0)}</span>
+                      {(() => {
+                        const veh = b.vehicle_id ? vehicleMap.get(b.vehicle_id) : null;
+                        const price = veh ? Number(veh.per_km_rate) * Number(b.estimated_km) : 0;
+                        return <span className="font-display text-2xl text-silver-bright">${price.toFixed(0)}</span>;
+                      })()}
                       <Badge variant="outline">{b.status}</Badge>
                       <Select value={b.status} onValueChange={(v) => mutation.mutate({ id: b.id, status: v as BookingStatus })}>
                         <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
@@ -114,7 +118,7 @@ export default function Admin() {
                     <div>
                       <p className="text-xs uppercase tracking-wider text-muted-foreground">Service</p>
                       <p className="text-silver-bright capitalize">{b.transfer_type.replace("_", " ")}</p>
-                      <p className="text-muted-foreground">{(b.vehicle_id && vehicleMap.get(b.vehicle_id)) || "—"}</p>
+                      <p className="text-muted-foreground">{(b.vehicle_id && vehicleMap.get(b.vehicle_id)?.name) || "—"}</p>
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-wider text-muted-foreground">Details</p>
@@ -279,19 +283,9 @@ function FleetManager() {
                   <Input type="number" min={0} value={form.capacity_luggage} onChange={(e) => setForm({ ...form, capacity_luggage: Number(e.target.value) })} />
                 </div>
               </div>
-              <div className="grid sm:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Base rate ($)</Label>
-                  <Input type="number" step="0.01" value={form.base_rate} onChange={(e) => setForm({ ...form, base_rate: Number(e.target.value) })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Per km ($)</Label>
-                  <Input type="number" step="0.01" value={form.per_km_rate} onChange={(e) => setForm({ ...form, per_km_rate: Number(e.target.value) })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Hourly ($)</Label>
-                  <Input type="number" step="0.01" value={form.hourly_rate} onChange={(e) => setForm({ ...form, hourly_rate: Number(e.target.value) })} />
-                </div>
+              <div className="space-y-2">
+                <Label>Per km ($)</Label>
+                <Input type="number" step="0.01" value={form.per_km_rate} onChange={(e) => setForm({ ...form, per_km_rate: Number(e.target.value) })} />
               </div>
               <div className="grid sm:grid-cols-2 gap-4 items-center">
                 <div className="space-y-2">
@@ -326,7 +320,7 @@ function FleetManager() {
                 <p className="text-xs text-muted-foreground">{v.category} · {v.capacity_passengers} pax · {v.capacity_luggage} bags</p>
                 {v.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{v.description}</p>}
               </div>
-              <span className="text-sm text-silver">base ${Number(v.base_rate).toFixed(0)} · /km ${Number(v.per_km_rate).toFixed(2)} · /h ${Number(v.hourly_rate).toFixed(0)}</span>
+              <span className="text-sm text-silver">${Number(v.per_km_rate).toFixed(2)} / km</span>
               <Badge variant={v.active ? "default" : "outline"}>{v.active ? "Active" : "Hidden"}</Badge>
               <div className="flex items-center gap-2">
                 <Button size="icon" variant="ghost" onClick={() => openEdit(v)} aria-label="Edit"><Pencil className="size-4" /></Button>
