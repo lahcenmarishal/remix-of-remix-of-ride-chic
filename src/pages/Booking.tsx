@@ -12,8 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { listVehicles, type Vehicle } from "@/lib/vehicles";
+import { VehicleImage } from "@/components/site/VehicleImage";
 import { createBooking, type TransferType } from "@/lib/bookings";
-import { vehicleImage } from "@/lib/vehicleImages";
 import { cn } from "@/lib/utils";
 import { useSeo } from "@/lib/useSeo";
 
@@ -173,7 +173,7 @@ export default function Booking() {
                     return (
                       <button key={v.id} onClick={() => setVehicleId(v.id)} className={cn("text-left rounded-xl border overflow-hidden bg-card transition-all", selected ? "border-primary shadow-[var(--shadow-glow)]" : "border-border hover:border-primary/50")}>
                         <div className="aspect-[16/9] overflow-hidden">
-                          <img src={vehicleImage(v.category)} alt={v.name} loading="lazy" className="size-full object-cover" />
+                          <VehicleImage imagePath={v.image_url} category={v.category} alt={v.name} className="size-full object-cover" />
                         </div>
                         <div className="p-5">
                           <div className="flex items-start justify-between gap-2">
@@ -182,19 +182,14 @@ export default function Booking() {
                               <h3 className="font-display text-xl text-silver-bright mt-1">{v.name}</h3>
                             </div>
                             <div className="text-right">
-                              <p className="text-xs text-primary uppercase tracking-wider">Quote</p>
-                              <p className="text-xs text-muted-foreground">on request</p>
+                              <p className="font-display text-lg text-silver-bright">${Number(v.per_km_rate).toFixed(2)}</p>
+                              <p className="text-xs text-muted-foreground">per km</p>
                             </div>
                           </div>
                           <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{v.description}</p>
                           <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-silver">
                             <span className="flex items-center gap-1"><Users className="size-3.5 text-primary" />{v.capacity_passengers}</span>
                             <span className="flex items-center gap-1"><Bag className="size-3.5 text-primary" />{v.capacity_luggage}</span>
-                          </div>
-                          <div className="mt-3 pt-3 border-t border-border/60 text-xs text-muted-foreground space-y-0.5">
-                            <div className="flex justify-between"><span>Base fare</span><span className="text-silver">${Number(v.base_rate).toFixed(0)}</span></div>
-                            <div className="flex justify-between"><span>Per km</span><span className="text-silver">${Number(v.per_km_rate).toFixed(2)}</span></div>
-                            <div className="flex justify-between"><span>Hourly / wait</span><span className="text-silver">${Number(v.hourly_rate).toFixed(0)}/h</span></div>
                           </div>
                         </div>
                       </button>

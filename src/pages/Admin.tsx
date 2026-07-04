@@ -279,19 +279,9 @@ function FleetManager() {
                   <Input type="number" min={0} value={form.capacity_luggage} onChange={(e) => setForm({ ...form, capacity_luggage: Number(e.target.value) })} />
                 </div>
               </div>
-              <div className="grid sm:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Base rate ($)</Label>
-                  <Input type="number" step="0.01" value={form.base_rate} onChange={(e) => setForm({ ...form, base_rate: Number(e.target.value) })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Per km ($)</Label>
-                  <Input type="number" step="0.01" value={form.per_km_rate} onChange={(e) => setForm({ ...form, per_km_rate: Number(e.target.value) })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Hourly ($)</Label>
-                  <Input type="number" step="0.01" value={form.hourly_rate} onChange={(e) => setForm({ ...form, hourly_rate: Number(e.target.value) })} />
-                </div>
+              <div className="space-y-2">
+                <Label>Per km ($)</Label>
+                <Input type="number" step="0.01" value={form.per_km_rate} onChange={(e) => setForm({ ...form, per_km_rate: Number(e.target.value) })} />
               </div>
               <div className="grid sm:grid-cols-2 gap-4 items-center">
                 <div className="space-y-2">
