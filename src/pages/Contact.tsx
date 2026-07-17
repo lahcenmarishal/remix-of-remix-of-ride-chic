@@ -13,7 +13,7 @@ export default function Contact() {
   });
   const { data: s } = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings });
   const phone = s?.contact_phone ?? "+1 (774) 434-5351";
-  const email = s?.contact_email ?? "info@ridechic.com";
+  const email = s?.contact_email ?? "contact@southshorebostonlimo.com";
   const area = s?.service_area ?? "Boston metropolitan area and surrounding";
   const hours = s?.hours ?? "24 hours / 7 days";
   return (

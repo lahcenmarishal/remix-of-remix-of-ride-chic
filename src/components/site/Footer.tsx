@@ -6,7 +6,7 @@ import { getSiteSettings } from "@/lib/settings";
 export function Footer() {
   const { data: s } = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings });
   const phone = s?.contact_phone ?? "+1 (774) 434-5351";
-  const email = s?.contact_email ?? "info@ridechic.com";
+  const email = s?.contact_email ?? "contact@southshorebostonlimo.com";
   const socials = [
     { href: s?.facebook_url, Icon: Facebook },
     { href: s?.twitter_url, Icon: Twitter },
