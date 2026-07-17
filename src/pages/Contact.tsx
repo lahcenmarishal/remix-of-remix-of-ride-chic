@@ -12,7 +12,7 @@ export default function Contact() {
     description: "Contact South Shore Limo Boston for chauffeur reservations, Logan airport transfers, weddings and corporate transport. Available 24/7.",
   });
   const { data: s } = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings });
-  const phone = s?.contact_phone ?? "+1 617 483 5676";
+  const phone = s?.contact_phone ?? "+1 (774) 434-5351";
   const email = s?.contact_email ?? "info@ridechic.com";
   const area = s?.service_area ?? "Boston metropolitan area and surrounding";
   const hours = s?.hours ?? "24 hours / 7 days";

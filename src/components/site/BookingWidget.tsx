@@ -92,7 +92,7 @@ export function BookingWidget() {
             <Button onClick={handleContinue} size="lg" className="flex-1 bg-primary hover:bg-primary/90 tracking-wider">
               Search <ArrowRight className="ml-2 size-4" />
             </Button>
-            <a href="tel:+16174835676" className="sm:w-auto">
+            <a href="tel:+17744345351" className="sm:w-auto">
               <Button size="lg" variant="outline" className="w-full tracking-wider">
                 <Phone className="size-4 mr-2" /> Call us
               </Button>
