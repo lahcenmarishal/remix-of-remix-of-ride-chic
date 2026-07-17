@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { listAllBookings, updateBookingStatus, type BookingStatus } from "@/lib/bookings";
+import { listAllBookings, updateBookingStatus, deleteBooking, type BookingStatus } from "@/lib/bookings";
 import { listAllVehiclesAdmin, createVehicle, updateVehicle, deleteVehicle, uploadVehicleImage, type AdminVehicle, type VehicleInput } from "@/lib/vehicles";
 import { VehicleImage } from "@/components/site/VehicleImage";
 import { getSiteSettings, updateSiteSettings, type SiteSettings } from "@/lib/settings";
@@ -46,6 +46,14 @@ export default function Admin() {
     mutationFn: updateBookingStatus,
     onSuccess: () => {
       toast.success("Status updated");
+      qc.invalidateQueries({ queryKey: ["all-bookings"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const deleteMut = useMutation({
+    mutationFn: deleteBooking,
+    onSuccess: () => {
+      toast.success("Reservation deleted");
       qc.invalidateQueries({ queryKey: ["all-bookings"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -102,6 +110,21 @@ export default function Admin() {
                           <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="ghost" aria-label="Delete reservation"><Trash2 className="size-4 text-destructive" /></Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete this reservation?</AlertDialogTitle>
+                            <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteMut.mutate(b.id)}>Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
 
