@@ -70,6 +70,19 @@ export async function createBooking(data: BookingInput) {
       notes: data.notes ?? "",
     });
   if (error) throw new Error(error.message);
+
+  // Fire-and-forget: notify admin via Resend. Never block booking confirmation on email failures.
+  const { data: v } = await supabase
+    .from("vehicles")
+    .select("name")
+    .eq("id", data.vehicle_id)
+    .maybeSingle();
+  supabase.functions
+    .invoke("send-booking-notification", {
+      body: { ...data, estimated_price: price, vehicle_name: v?.name },
+    })
+    .catch((e) => console.error("send-booking-notification failed", e));
+
   return { estimated_price: price };
 }
 
