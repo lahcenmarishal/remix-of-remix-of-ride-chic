@@ -220,7 +220,7 @@ export default function Booking() {
                             </div>
                             <div className="text-right">
                               <p className="font-display text-lg text-silver-bright">${Number(v.per_km_rate).toFixed(2)}</p>
-                              <p className="text-xs text-muted-foreground">per km</p>
+                              <p className="text-xs text-muted-foreground">per mile</p>
                             </div>
                           </div>
                           <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{v.description}</p>
