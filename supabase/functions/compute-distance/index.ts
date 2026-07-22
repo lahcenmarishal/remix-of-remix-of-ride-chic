@@ -45,9 +45,10 @@ Deno.serve(async (req) => {
     }
 
     const km = Math.round((r.distance / 1000) * 10) / 10;
+    const miles = Math.round((r.distance / 1609.344) * 10) / 10;
     const durationMin = Math.round(r.duration / 60);
 
-    return new Response(JSON.stringify({ km, durationMin }), {
+    return new Response(JSON.stringify({ km, miles, durationMin }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
