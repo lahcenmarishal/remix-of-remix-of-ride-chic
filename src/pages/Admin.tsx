@@ -311,7 +311,7 @@ function FleetManager() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Per km ($)</Label>
+                <Label>Per mile ($)</Label>
                 <Input type="number" step="0.01" value={form.per_km_rate} onChange={(e) => setForm({ ...form, per_km_rate: Number(e.target.value) })} />
               </div>
               <div className="grid sm:grid-cols-2 gap-4 items-center">
