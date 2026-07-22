@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, ArrowRight, ArrowLeft, Users, Briefcase as Bag } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,7 @@ import { VehicleImage } from "@/components/site/VehicleImage";
 import { createBooking, type TransferType } from "@/lib/bookings";
 import { cn } from "@/lib/utils";
 import { useSeo } from "@/lib/useSeo";
+import { BOSTON_PLACES } from "@/lib/bostonPlaces";
 
 type Step = 1 | 2 | 3;
 
@@ -39,7 +40,7 @@ export default function Booking() {
   const [passengers, setPassengers] = useState(1);
   const [luggage, setLuggage] = useState(1);
   const [extraWait, setExtraWait] = useState(Number(searchParams.get("wait") ?? 0));
-  const [estimatedKm, setEstimatedKm] = useState(Number(searchParams.get("km") ?? 25));
+  const [estimatedMiles, setEstimatedMiles] = useState(Number(searchParams.get("miles") ?? 0));
 
   const [vehicleId, setVehicleId] = useState<string>(searchParams.get("vehicle") ?? "");
 
@@ -59,28 +60,33 @@ export default function Booking() {
   });
 
   const canNext1 = date && time && pickup && dropoff;
-  const [computingKm, setComputingKm] = useState(false);
+  const [computingMiles, setComputingMiles] = useState(false);
 
-  const handleComputeDistance = async () => {
-    if (!pickup || !dropoff) return;
-    setComputingKm(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("compute-distance", {
-        body: { pickup, dropoff },
-      });
-      if (error) throw error;
-      if (data?.km) {
-        setEstimatedKm(data.km);
-        toast.success(`Distance: ${data.km} km${data.durationMin ? ` · ~${data.durationMin} min` : ""}`);
-      } else {
-        toast.error(data?.error ?? "Unable to compute distance");
+  // Auto-calculate distance in miles when both pickup and drop-off are set.
+  useEffect(() => {
+    if (!pickup || !dropoff || transferType === "hourly") return;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setComputingMiles(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("compute-distance", {
+          body: { pickup, dropoff },
+        });
+        if (error) throw error;
+        if (!controller.signal.aborted && typeof data?.miles === "number") {
+          setEstimatedMiles(data.miles);
+        }
+      } catch (e) {
+        console.warn("Distance auto-calculation failed:", (e as Error).message);
+      } finally {
+        if (!controller.signal.aborted) setComputingMiles(false);
       }
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setComputingKm(false);
-    }
-  };
+    }, 700);
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [pickup, dropoff, transferType]);
   const canNext2 = !!vehicleId;
   const selectedVehicle = vehicles.find((v) => v.id === vehicleId);
 
@@ -95,7 +101,7 @@ export default function Booking() {
       passengers,
       luggage,
       extra_wait_hours: extraWait,
-      estimated_km: estimatedKm,
+      estimated_km: estimatedMiles,
       vehicle_id: vehicleId,
       customer_name: name,
       customer_email: email,
@@ -140,12 +146,15 @@ export default function Booking() {
                   </div>
                   <div className="space-y-2">
                     <Label>Pickup location</Label>
-                    <Input value={pickup} onChange={(e) => setPickup(e.target.value)} placeholder="Address, hotel or airport" />
+                    <Input list="boston-places" value={pickup} onChange={(e) => setPickup(e.target.value)} placeholder="Address, hotel or airport" />
                   </div>
                   <div className="space-y-2">
                     <Label>Drop-off location</Label>
-                    <Input value={dropoff} onChange={(e) => setDropoff(e.target.value)} placeholder="Destination" />
+                    <Input list="boston-places" value={dropoff} onChange={(e) => setDropoff(e.target.value)} placeholder="Destination" />
                   </div>
+                  <datalist id="boston-places">
+                    {BOSTON_PLACES.map((p) => <option key={p} value={p} />)}
+                  </datalist>
                   <div className="space-y-2">
                     <Label>Transfer type</Label>
                     <Select value={transferType} onValueChange={(v) => setTransferType(v as TransferType)}>
@@ -171,14 +180,14 @@ export default function Booking() {
                   </div>
                   {transferType !== "hourly" && (
                     <div className="space-y-2 md:col-span-2">
-                      <Label>Estimated distance (km)</Label>
-                      <div className="flex gap-2">
-                        <Input type="number" min={1} max={2000} value={estimatedKm} onChange={(e) => setEstimatedKm(Number(e.target.value))} />
-                        <Button type="button" variant="outline" onClick={handleComputeDistance} disabled={!pickup || !dropoff || computingKm}>
-                          {computingKm ? "Calculating…" : "Auto-calculate"}
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Auto-calculated via OpenStreetMap routing — you can adjust manually. Final pricing confirmed by our team.</p>
+                      <Label>Estimated distance (miles)</Label>
+                      <Input
+                        type="text"
+                        readOnly
+                        value={computingMiles ? "Calculating…" : estimatedMiles ? `${estimatedMiles} mi` : "—"}
+                        className="bg-muted/40"
+                      />
+                      <p className="text-xs text-muted-foreground">Distance is calculated automatically from pickup & drop-off. Final pricing confirmed by our team.</p>
                     </div>
                   )}
                 </div>
