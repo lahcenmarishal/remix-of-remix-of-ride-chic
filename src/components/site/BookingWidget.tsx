@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BOSTON_PLACES } from "@/lib/bostonPlaces";
 
 export function BookingWidget() {
   const navigate = useNavigate();
@@ -55,16 +56,19 @@ export function BookingWidget() {
               <Label className="text-xs uppercase tracking-wider text-silver">Pickup location</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-primary pointer-events-none z-10" />
-                <Input id="pickup" value={pickup} onChange={(e) => setPickup(e.target.value)} placeholder="Address, hotel or airport" className="pl-9" />
+                <Input id="pickup" list="boston-places-widget" value={pickup} onChange={(e) => setPickup(e.target.value)} placeholder="Address, hotel or airport" className="pl-9" />
               </div>
             </div>
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider text-silver">Drop-off location</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-primary pointer-events-none z-10" />
-                <Input id="dropoff" value={dropoff} onChange={(e) => setDropoff(e.target.value)} placeholder="Destination" className="pl-9" />
+                <Input id="dropoff" list="boston-places-widget" value={dropoff} onChange={(e) => setDropoff(e.target.value)} placeholder="Destination" className="pl-9" />
               </div>
             </div>
+            <datalist id="boston-places-widget">
+              {BOSTON_PLACES.map((p) => <option key={p} value={p} />)}
+            </datalist>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
