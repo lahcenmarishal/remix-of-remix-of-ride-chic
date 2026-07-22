@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Check, ArrowRight, ArrowLeft, Users, Briefcase as Bag } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,28 @@ export default function Booking() {
   });
 
   const canNext1 = date && time && pickup && dropoff;
+  const [computingKm, setComputingKm] = useState(false);
+
+  const handleComputeDistance = async () => {
+    if (!pickup || !dropoff) return;
+    setComputingKm(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("compute-distance", {
+        body: { pickup, dropoff },
+      });
+      if (error) throw error;
+      if (data?.km) {
+        setEstimatedKm(data.km);
+        toast.success(`Distance: ${data.km} km${data.durationMin ? ` · ~${data.durationMin} min` : ""}`);
+      } else {
+        toast.error(data?.error ?? "Unable to compute distance");
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setComputingKm(false);
+    }
+  };
   const canNext2 = !!vehicleId;
   const selectedVehicle = vehicles.find((v) => v.id === vehicleId);
 
@@ -149,8 +172,13 @@ export default function Booking() {
                   {transferType !== "hourly" && (
                     <div className="space-y-2 md:col-span-2">
                       <Label>Estimated distance (km)</Label>
-                      <Input type="number" min={1} max={2000} value={estimatedKm} onChange={(e) => setEstimatedKm(Number(e.target.value))} />
-                      <p className="text-xs text-muted-foreground">Approximate — we'll confirm final pricing on confirmation.</p>
+                      <div className="flex gap-2">
+                        <Input type="number" min={1} max={2000} value={estimatedKm} onChange={(e) => setEstimatedKm(Number(e.target.value))} />
+                        <Button type="button" variant="outline" onClick={handleComputeDistance} disabled={!pickup || !dropoff || computingKm}>
+                          {computingKm ? "Calculating…" : "Auto-calculate"}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Auto-calculated via OpenStreetMap routing — you can adjust manually. Final pricing confirmed by our team.</p>
                     </div>
                   )}
                 </div>
