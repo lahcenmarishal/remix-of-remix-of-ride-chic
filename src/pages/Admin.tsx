@@ -97,7 +97,11 @@ export default function Admin() {
                     <div className="flex items-center gap-3">
                       {(() => {
                         const veh = b.vehicle_id ? vehicleMap.get(b.vehicle_id) : null;
-                        const price = veh ? Number(veh.per_km_rate) * Number(b.estimated_km) : 0;
+                        const price = veh
+                          ? (b.transfer_type === "hourly"
+                              ? Number(veh.hourly_rate) * Math.max(1, Number(b.extra_wait_hours) || 1)
+                              : Number(veh.per_km_rate) * Number(b.estimated_km))
+                          : 0;
                         return <span className="font-display text-2xl text-silver-bright">${price.toFixed(0)}</span>;
                       })()}
                       <Badge variant="outline">{b.status}</Badge>
@@ -146,7 +150,7 @@ export default function Admin() {
                     <div>
                       <p className="text-xs uppercase tracking-wider text-muted-foreground">Details</p>
                       <p className="text-muted-foreground">{b.passengers} pax · {b.luggage} bags</p>
-                      <p className="text-muted-foreground">{Number(b.estimated_km)} km · +{b.extra_wait_hours}h wait</p>
+                      <p className="text-muted-foreground">{Number(b.estimated_km)} mi · +{b.extra_wait_hours}h wait</p>
                     </div>
                   </div>
 
@@ -307,7 +311,7 @@ function FleetManager() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Per km ($)</Label>
+                <Label>Per mile ($)</Label>
                 <Input type="number" step="0.01" value={form.per_km_rate} onChange={(e) => setForm({ ...form, per_km_rate: Number(e.target.value) })} />
               </div>
               <div className="grid sm:grid-cols-2 gap-4 items-center">
@@ -343,7 +347,7 @@ function FleetManager() {
                 <p className="text-xs text-muted-foreground">{v.category} · {v.capacity_passengers} pax · {v.capacity_luggage} bags</p>
                 {v.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{v.description}</p>}
               </div>
-              <span className="text-sm text-silver">${Number(v.per_km_rate).toFixed(2)} / km</span>
+              <span className="text-sm text-silver">${Number(v.per_km_rate).toFixed(2)} / mile</span>
               <Badge variant={v.active ? "default" : "outline"}>{v.active ? "Active" : "Hidden"}</Badge>
               <div className="flex items-center gap-2">
                 <Button size="icon" variant="ghost" onClick={() => openEdit(v)} aria-label="Edit"><Pencil className="size-4" /></Button>

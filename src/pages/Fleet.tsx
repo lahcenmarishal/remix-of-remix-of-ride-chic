@@ -46,7 +46,7 @@ export default function Fleet() {
                     <div className="mt-6 flex items-center gap-6 text-sm text-silver">
                       <span className="flex items-center gap-2"><Users className="size-4 text-primary" /> {v.capacity_passengers} pax</span>
                       <span className="flex items-center gap-2"><Bag className="size-4 text-primary" /> {v.capacity_luggage} bags</span>
-                      <span className="ml-auto text-primary font-medium">${Number(v.per_km_rate).toFixed(2)} / km</span>
+                      <span className="ml-auto text-primary font-medium">${Number(v.per_km_rate).toFixed(2)} / mile</span>
                     </div>
                     <Link to={`/booking?vehicle=${v.id}`} className="block mt-6">
                       <Button className="w-full bg-primary hover:bg-primary/90 tracking-wider">Reserve this vehicle</Button>
