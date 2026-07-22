@@ -271,9 +271,19 @@ export default function Booking() {
                         <p className="text-silver-bright font-display text-lg">{selectedVehicle.name}</p>
                         <p className="text-sm text-muted-foreground">{pickup} → {dropoff}</p>
                         <p className="text-sm text-muted-foreground">{date} at {time} · {passengers} pax · {luggage} bags</p>
+                        <p className="text-sm text-muted-foreground">
+                          {transferType === "hourly"
+                            ? `${Math.max(1, extraWait || 1)} h at $${Number(selectedVehicle.hourly_rate).toFixed(0)}/h`
+                            : `${estimatedMiles} mi at $${Number(selectedVehicle.per_km_rate).toFixed(2)}/mi`}
+                        </p>
                       </div>
                       <div className="text-right max-w-[16rem]">
-                        <p className="text-sm text-primary font-medium">Quote on request</p>
+                        <p className="font-display text-2xl text-silver-bright">
+                          ${(transferType === "hourly"
+                            ? Number(selectedVehicle.hourly_rate) * Math.max(1, extraWait || 1)
+                            : Number(selectedVehicle.per_km_rate) * estimatedMiles
+                          ).toFixed(0)}
+                        </p>
                         <p className="text-xs text-muted-foreground mt-1">Final price confirmed by our team by email or phone within minutes.</p>
                       </div>
                     </div>
